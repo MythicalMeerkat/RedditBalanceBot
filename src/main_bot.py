@@ -59,13 +59,13 @@ def run_bot(p, comments_replied_to):
 
     return
 
-
 #######################################################
 # Grabs the log of previously replied comments. If the
 # file exists stores the data from it into an empty
 # list. If it doesn't, create an empty list. Return the
 # list to the calling routine.
 #######################################################
+
 
 def get_saved_comments():
     if not os.path.isfile("comments_replied_to.txt"):
@@ -89,3 +89,8 @@ comments_replied_list = get_saved_comments()
 
 while True:
     run_bot(bot_profile, comments_replied_list)
+
+
+#############################################
+# End of Script                             #
+#############################################
