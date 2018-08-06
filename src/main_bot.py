@@ -38,12 +38,12 @@ def bot_login():
 #######################################################
 
 
-def run_bot(p, comments_replied_to):
+def run_bot(p, comments_replied_to, prev_replies):
     amount_of_comments = 0
     replied = False
     print("\nObtaining comments...")
 
-    for comment in p.subreddit('Test').comments(limit=25):
+    for comment in p.subreddit('Test').comments(limit=100):
         if phrase in comment.body.lower() and comment.id not in comments_replied_list and comment.author != p.user.me():
             comment.reply("As all things should be")
             print("Replied to comment " + comment.id)
@@ -57,6 +57,8 @@ def run_bot(p, comments_replied_to):
 
     if not replied:
         print("Did not reply to any comments")
+
+    # write_number_of_replies_to_file(amount_of_comments, prev_replies)
 
     return
 
@@ -94,15 +96,16 @@ def get_number_of_replies():
     else:
         with open("lifetime_replies.txt", "r") as f:
             total_replies = f.read()
-            total_replies = list(filter(None, total_replies))
 
-    return total_replies
+    return
 
 
-def write_number_of_replies_to_file(amount):
-    total = lifetime_replies + amount
-    with open("lifetime_replies.txt", "w") as file:
-        file.write(total)
+def write_number_of_replies_to_file(amount, prev_replies):
+    # total = (amount + prev_replies)
+    # with open("lifetime_replies.txt", "w") as file:
+    #    file.write(str(total))
+
+    return
 
 
 #############################################
@@ -115,7 +118,7 @@ comments_replied_list = get_saved_comments()
 lifetime_replies = get_number_of_replies()
 
 while True:
-    run_bot(bot_profile, comments_replied_list)
+    run_bot(bot_profile, comments_replied_list, lifetime_replies)
 
     # Sleep so we can chill a bit and reduce potential spam
     print("Sleeping for 20 seconds")
