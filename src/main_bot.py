@@ -5,12 +5,11 @@
 
 import praw  # Reddit API Wrapper
 import config
-import time  # For Timer Functions
 import os
-import datetime  # For Checking Time of Day
 
-phrase = "perfectly balanced"
+phrase = config.searching_phrase
 banned_subreddits = config.banned_subreddits
+response = config.response
 
 #######################################################
 # Grab profile credentials from the private config file
@@ -38,17 +37,36 @@ def bot_login():
 #######################################################
 
 
-def run_bot(p, comments_replied_to):
-    amount_of_comments = 0
+def run_bot_initial(p, comments_replied_to):
     replied = False
-    print("\nObtaining comments...")
+    print("\nObtaining 100 INITIAL Comments...")
 
-    for comment in p.subreddit('Test').comments(limit=25):
+    for comment in p.subreddit('Test').comments(limit=100):
+        if phrase in comment.body.lower() and comment.id not in comments_replied_list and comment.author != p.user.me():
+            comment.reply(response)
+            print("Replied to comment " + comment.id)
+            replied = True
+
+            comments_replied_to.append(comment.id)
+
+            with open("comments_replied_to.txt", "a") as file:
+                file.write(comment.id + "\n")
+
+    if not replied:
+        print("Did not reply to any comments")
+
+    return
+
+
+def run_bot_passive(p, comments_replied_to):
+    replied = False
+    print("\nINTERCEPTING NEW COMMENTS...")
+
+    for comment in p.subreddit('Test').stream.comments():
         if phrase in comment.body.lower() and comment.id not in comments_replied_list and comment.author != p.user.me():
             comment.reply("As all things should be")
             print("Replied to comment " + comment.id)
             replied = True
-            amount_of_comments += 1
 
             comments_replied_to.append(comment.id)
 
@@ -79,31 +97,6 @@ def get_saved_comments():
 
     return comments_replied_to
 
-#######################################################
-# Grabs the log of lifetime comment replies. If the
-# file exists stores the data from it into a
-# list. If it doesn't, create an empty list. Return the
-# list to the calling routine.
-#######################################################
-
-
-def get_number_of_replies():
-    if not os.path.isfile("lifetime_replies.txt"):
-        total_replies = 0
-
-    else:
-        with open("lifetime_replies.txt", "r") as f:
-            total_replies = f.read()
-            total_replies = list(filter(None, total_replies))
-
-    return total_replies
-
-
-def write_number_of_replies_to_file(amount):
-    total = lifetime_replies + amount
-    with open("lifetime_replies.txt", "w") as file:
-        file.write(total)
-
 
 #############################################
 # Entry point (Main) for running the script #
@@ -112,15 +105,11 @@ def write_number_of_replies_to_file(amount):
 # Should only be executed once
 bot_profile = bot_login()
 comments_replied_list = get_saved_comments()
-lifetime_replies = get_number_of_replies()
+run_bot_initial(bot_profile, comments_replied_list)
 
+print("\nBOT HAS ENTERED PASSIVE MODE")
 while True:
-    run_bot(bot_profile, comments_replied_list)
-
-    # Sleep so we can chill a bit and reduce potential spam
-    print("Sleeping for 20 seconds")
-    time.sleep(20)
-
+    run_bot_passive(bot_profile, comments_replied_list)
 
 #############################################
 # End of Script                             #
