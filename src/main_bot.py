@@ -1,7 +1,7 @@
 # Jeffrey A. Wilson
 # Created: Aug. 5, 2018
-# Entry point for Running the Reddit Bot
 
+# Entry point for Running the Reddit Bot
 
 import praw  # Reddit API Wrapper
 import config
@@ -41,7 +41,7 @@ def run_bot_initial(p, comments_replied_to):
     replied = False
     print("\nObtaining 100 INITIAL Comments...")
 
-    for comment in p.subreddit('Test').comments(limit=100):
+    for comment in p.subreddit('all').comments(limit=100):
         if phrase in comment.body.lower() and comment.id not in comments_replied_list and comment.author != p.user.me():
             comment.reply(response)
             print("Replied to comment " + comment.id)
@@ -107,9 +107,9 @@ bot_profile = bot_login()
 comments_replied_list = get_saved_comments()
 run_bot_initial(bot_profile, comments_replied_list)
 
-print("\nBOT HAS ENTERED PASSIVE MODE")
-while True:
-    run_bot_passive(bot_profile, comments_replied_list)
+print("\nBOT HAS ENTERED PASSIVE MODE\n")
+
+run_bot_passive(bot_profile, comments_replied_list)
 
 #############################################
 # End of Script                             #
